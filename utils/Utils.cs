@@ -61,13 +61,6 @@ using System.Windows.Media.Imaging;
             return appVer;
         }
 
-        public static string AppVer()
-        {
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
-            return CleanAppVer(fvi.ProductVersion);
-        }
-
         static string v2fhelper(string v, string suff, ref float[] version, float weight)
         {
             float f = 0;
