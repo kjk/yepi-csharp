@@ -1,13 +1,3 @@
-//-----------------------------------------------------------------------
-// <copyright file="SingleInstance.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// <summary>
-//     This class checks to make sure that only one instance of 
-//     this application is running at a time.
-// </summary>
-//-----------------------------------------------------------------------
-
 namespace Yepi
 {
     using System;
@@ -63,7 +53,6 @@ namespace Yepi
                 IntPtr p = _LocalFree(argv);
             }
         }
-
     } 
 
     public interface ISingleInstanceApp 
@@ -71,42 +60,25 @@ namespace Yepi
          bool SignalExternalCommandLineArgs(IList<string> args); 
     } 
 
-    /// <summary>
-    /// This class checks to make sure that only one instance of 
-    /// this application is running at a time.
-    /// </summary>
-    /// <remarks>
-    /// Note: this class should be used with some caution, because it does no
-    /// security checking. For example, if one instance of an app that uses this class
-    /// is running as Administrator, any other instance, even if it is not
-    /// running as Administrator, can activate it with command line arguments.
-    /// For most apps, this will not be much of an issue.
-    /// </remarks>
+    // Note: this class should be used with some caution, because it does no
+    // security checking. For example, if one instance of an app that uses this class
+    // is running as Administrator, any other instance, even if it is not
+    // running as Administrator, can activate it with command line arguments.
+    // For most apps, this will not be much of an issue.
     public static class SingleInstance<TApplication>  
                 where   TApplication: Application ,  ISingleInstanceApp 
                                     
     {
-        /// String delimiter used in channel names.
         private const string Delimiter = ":";
-
-        /// Suffix to the channel name.
         private const string ChannelNameSuffix = "SingeInstanceIPCChannel";
-
-        /// Remote service name.
         private const string RemoteServiceName = "SingleInstanceApplicationService";
-
-        /// IPC protocol used (string).
         private const string IpcProtocol = "ipc://";
-
-        /// Application mutex.
         private static Mutex singleInstanceMutex;
-
-        /// IPC channel for communications.
         private static IpcServerChannel channel;
 
-        /// Checks if the instance of the application attempting to start is the first instance. 
-        /// If not, activates the first instance.
-        /// Returns True if this is the first instance of the application.
+        // Checks if the instance of the application attempting to start is the first instance. 
+        // If not, activates the first instance.
+        // Returns True if this is the first instance of the application.
         public static bool InitializeAsFirstInstance(string uniqueName, bool notify = true)
         {
             var channelName = ChannelName(uniqueName);
@@ -152,8 +124,9 @@ namespace Yepi
             }
         }
 
-        /// Gets command line args - for ClickOnce deployed applications, command line args may not be passed directly, they have to be retrieved.
-        /// Returns list of command line arg strings.
+        // Gets command line args - for ClickOnce deployed applications, command line
+        // args may not be passed directly, they have to be retrieved.
+        // Returns list of command line arg strings.
         public static IList<string> GetCommandLineArgs(string uniqueApplicationName)
         {
             string[] args = null;
@@ -197,11 +170,6 @@ namespace Yepi
 
             return new List<string>(args);
         }
-
-        /// <summary>
-        /// Creates a remote service for communication.
-        /// </summary>
-        /// <param name="channelName">Application's IPC channel name.</param>
         private static void CreateRemoteService(string channelName)
         {
             BinaryServerFormatterSinkProvider serverProvider = new BinaryServerFormatterSinkProvider();
@@ -212,26 +180,17 @@ namespace Yepi
             props["portName"] = channelName;
             props["exclusiveAddressUse"] = "false";
 
-            // Create the IPC Server channel with the channel properties
             channel = new IpcServerChannel(props, serverProvider);
-
-            // Register the channel with the channel services
             ChannelServices.RegisterChannel(channel, true);
-
-            // Expose the remote service with the REMOTE_SERVICE_NAME
             IPCRemoteService remoteService = new IPCRemoteService();
             RemotingServices.Marshal(remoteService, RemoteServiceName);
         }
 
-        /// <summary>
-        /// Creates a client channel and obtains a reference to the remoting service exposed by the server - 
-        /// in this case, the remoting service exposed by the first instance. Calls a function of the remoting service 
-        /// class to pass on command line arguments from the second instance to the first and cause it to activate itself.
-        /// </summary>
-        /// <param name="channelName">Application's IPC channel name.</param>
-        /// <param name="args">
-        /// Command line arguments for the second instance, passed to the first instance to take appropriate action.
-        /// </param>
+        // Creates a client channel and obtains a reference to the remoting service exposed by the server - 
+        // in this case, the remoting service exposed by the first instance. Calls a function of the remoting service 
+        // class to pass on command line arguments from the second instance to the first and cause it to activate itself.
+        // channelName: Application's IPC channel name
+        // args: command line arguments for the second instance, passed to the first instance to take appropriate action.
         public static void SignalFirstInstance(string uniqueName, IList<string> args)
         {
             string channelName = ChannelName(uniqueName);
@@ -253,11 +212,7 @@ namespace Yepi
             }
         }
 
-        /// <summary>
-        /// Callback for activating first instance of the application.
-        /// </summary>
-        /// <param name="arg">Callback argument.</param>
-        /// <returns>Always null.</returns>
+        // Callback for activating first instance of the application.
         private static object ActivateFirstInstanceCallback(object arg)
         {
             // Get command line args to be passed to first instance
@@ -266,10 +221,7 @@ namespace Yepi
             return null;
         }
 
-        /// <summary>
-        /// Activates the first instance of the application with arguments from a second instance.
-        /// </summary>
-        /// <param name="args">List of arguments to supply the first instance of the application.</param>
+        // Activates the first instance of the application with arguments from a second instance.
         private static void ActivateFirstInstance(IList<string> args)
         {
             // Set main window state and process command line args
@@ -281,16 +233,11 @@ namespace Yepi
             ((TApplication)Application.Current).SignalExternalCommandLineArgs(args);
         }
 
-        /// <summary>
-        /// Remoting service class which is exposed by the server i.e the first instance and called by the second instance
-        /// to pass on the command line arguments to the first instance and cause it to activate itself.
-        /// </summary>
+        // Remoting service class which is exposed by the server i.e the first instance and called by the second instance
+        // to pass on the command line arguments to the first instance and cause it to activate itself.
         private class IPCRemoteService : MarshalByRefObject
         {
-            /// <summary>
-            /// Activates the first instance of the application.
-            /// </summary>
-            /// <param name="args">List of arguments to pass to the first instance.</param>
+            // Activates the first instance of the application.
             public void InvokeFirstInstance(IList<string> args)
             {
                 if (Application.Current != null)
@@ -301,11 +248,8 @@ namespace Yepi
                 }
             }
 
-            /// <summary>
-            /// Remoting Object's ease expires after every 5 minutes by default. We need to override the InitializeLifetimeService class
-            /// to ensure that lease never expires.
-            /// </summary>
-            /// <returns>Always null.</returns>
+            // Remoting Object's ease expires after every 5 minutes by default. We need to override the InitializeLifetimeService class
+            // to ensure that lease never expires.
             public override object InitializeLifetimeService()
             {
                 return null;

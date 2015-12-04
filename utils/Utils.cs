@@ -426,52 +426,6 @@ using System.Windows.Media.Imaging;
             }
         }
 
-        // Note: 40x responses from the server cause an exception from HttpWebResponse.GetResponse()
-        // in which case we'll return Tuple<null,null>. This might need to change.
-        // http://stackoverflow.com/questions/692342/net-httpwebrequest-getresponse-raises-exception-when-http-status-code-400-bad
-        public static Tuple<string, HttpWebResponse> TryUrlGet(string url)
-        {
-            try
-            {
-                HttpWebRequest req = WebRequest.Create(url) as HttpWebRequest;
-                req.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-                HttpWebResponse rsp = req.GetResponse() as HttpWebResponse;
-
-                var defaultEncoding = Encoding.UTF8;
-                if (!String.IsNullOrWhiteSpace(rsp.CharacterSet))
-                {
-                    // TODO: check for non utf-8 character sets
-                }
-                byte[] data = rsp.GetResponseStream().ReadAsBytes();
-                rsp.Close();
-                string s = GetString(data, defaultEncoding);
-                Log.Ll(String.Format("TryUrlGet(): downloaded url '{0}' of size {1} bytes", url, data.Length));
-                return new Tuple<string, HttpWebResponse>(s, rsp);
-            }
-            catch (Exception e)
-            {
-                Log.Ll(String.Format("TryUrlGet() for '{0}' failed", url));
-                Log.Le(e);
-                // it's ok if we fail
-                return new Tuple<string, HttpWebResponse>(null, null);
-            }
-        }
-
-        // Atomic downloading of the content of a url to a file.
-        // Downloads to temporary file and renames to destination path
-        // after download to avoid problem of unfinished downloads caused e.g.
-        // by killing the program.
-        public static bool TryUrlGetToFileAtomic(string url, string dstPath)
-        {
-            string tmpPath = TryUrlGetToTempFile(url, System.IO.Path.GetTempPath());
-            if (null == tmpPath)
-                return false;
-            bool ok = TryFileMove(tmpPath, dstPath);
-            if (!ok)
-                TryFileDelete(tmpPath);
-            return ok;
-        }
-
         public static string TempPath()
         {
             return System.IO.Path.Combine(System.IO.Path.GetTempPath(), System.IO.Path.GetRandomFileName());
