@@ -12,14 +12,34 @@ namespace Yepi
     public static class Http
     {
         // returns null if failed to download
-        public static async Task<string> UrlDownloadAsStringAsync(string uri)
+        public static async Task<string> UrlDownloadAsStringAsync(string url)
         {
             try
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    var res = await client.GetStringAsync(uri);
+                    var res = await client.GetStringAsync(url);
                     return res;
+                }
+            }
+            catch (Exception e)
+            {
+                Log.E(e);
+                return null;
+            }
+        }
+
+        public static async Task<string> PostStringAsync(string url, string postData)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    StringContent sc = new StringContent(postData);
+                    HttpResponseMessage response = await client.PostAsync(new Uri(url), sc);
+                    response.EnsureSuccessStatusCode();
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    return responseBody;
                 }
             }
             catch (Exception e)
