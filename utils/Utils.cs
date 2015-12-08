@@ -115,7 +115,7 @@ using System.Windows.Media.Imaging;
             var v1f = version2float(ver1.ToLower());
             var v2f = version2float(ver2.ToLower());
             bool greater = v1f > v2f;
-            Log.Ll(String.Format("ProgramVersionGreater(), ver1={0}, ver2={1}, v1f={2}, v2f={3}, v1f>v2f={4}", ver1, ver2, v1f, v2f, greater));
+            Log.Line(String.Format("ProgramVersionGreater(), ver1={0}, ver2={1}, v1f={2}, v2f={3}, v1f>v2f={4}", ver1, ver2, v1f, v2f, greater));
             return greater;
         }
 
@@ -149,7 +149,7 @@ using System.Windows.Media.Imaging;
             }
             catch (Exception e)
             {
-                Log.Le(e);
+                Log.E(e);
                 return false;
             }
             return true;
@@ -165,7 +165,7 @@ using System.Windows.Media.Imaging;
             }
             catch (Exception e)
             {
-                Log.Le(e);
+                Log.E(e);
             }
         }
 
@@ -201,7 +201,7 @@ using System.Windows.Media.Imaging;
             }
             catch (Exception e)
             {
-                Log.Le(e);
+                Log.E(e);
                 return false;
             }
         }
@@ -216,7 +216,7 @@ using System.Windows.Media.Imaging;
             {
                 if (e is OperationCanceledException)
                     return;
-                Log.Le(e);
+                Log.E(e);
             }
         }
 
@@ -230,7 +230,7 @@ using System.Windows.Media.Imaging;
             {
                 if (e is OperationCanceledException)
                     return;
-                Log.Le(e);
+                Log.E(e);
             }
         }
 
@@ -244,7 +244,7 @@ using System.Windows.Media.Imaging;
             {
                 if (e is OperationCanceledException)
                     return;
-                Log.Le(e);
+                Log.E(e);
             }
         }
 
@@ -258,7 +258,7 @@ using System.Windows.Media.Imaging;
             {
                 if (e is OperationCanceledException)
                     return;
-                Log.Le(e);
+                Log.E(e);
             }
         }
 
@@ -444,31 +444,6 @@ using System.Windows.Media.Imaging;
             return ok;
         }
 
-        // TODO: use system temp directory instead of providing it by the app
-        public static string TryUrlGetToTempFile(string url, string dir)
-        {
-            try
-            {
-                var path = System.IO.Path.Combine(dir, System.IO.Path.GetRandomFileName());
-                WebRequest request = WebRequest.Create(url);
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                Stream fileReader = response.GetResponseStream();
-                using (FileStream fileWriter = File.Open(path, FileMode.Create))
-                {
-                    fileReader.CopyTo(fileWriter);
-                }
-                fileReader.Close();
-                var size = new FileInfo(path).Length;
-                Log.Ll(String.Format("TryUrlGetToTempFile(): downloaded url '{0}' of size {1} bytes", url, size));
-                return path;
-            }
-            catch (Exception e)
-            {
-                Log.Le(e);
-                return null;
-            }
-        }
-
         public static string TryReadUtf8FromFile(string path)
         {
             try
@@ -487,7 +462,7 @@ using System.Windows.Media.Imaging;
             }
             catch (Exception e)
             {
-                Log.Le(e);
+                Log.E(e);
                 return null;
             }
         }
@@ -508,7 +483,7 @@ using System.Windows.Media.Imaging;
             catch (Exception e)
             {
                 TryFileDelete(path);
-                Log.Le(e);
+                Log.E(e);
                 return false;
             }
         }
@@ -536,7 +511,7 @@ using System.Windows.Media.Imaging;
             }
             catch (Exception e)
             {
-                Log.Le(e);
+                Log.E(e);
             }
         }
 
@@ -565,7 +540,7 @@ using System.Windows.Media.Imaging;
             }
             catch (Exception e)
             {
-                Log.Le(e);
+                Log.E(e);
                 return null;
             }
         }
@@ -654,7 +629,7 @@ using System.Windows.Media.Imaging;
             }
             catch (Exception e)
             {
-                Log.Le(e);
+                Log.E(e);
             }
         }
 

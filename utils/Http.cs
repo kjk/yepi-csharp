@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net.Http;
 using System.Net;
+using System.IO;
 
 namespace Yepi
 {
@@ -23,7 +24,7 @@ namespace Yepi
             }
             catch (Exception e)
             {
-                Log.Le(e);
+                Log.E(e);
                 return null;
             }
         }
@@ -39,9 +40,9 @@ namespace Yepi
                     return res;
                 }
             }
-            catch
+            catch (Exception e)
             {
-                Console.WriteLine($"UrlDownloadAsync: exception happened");
+                Log.E(e);
                 return null;
             }
         }
@@ -66,13 +67,13 @@ namespace Yepi
                 byte[] data = rsp.GetResponseStream().ReadAsBytes();
                 rsp.Close();
                 string s = Utils.GetString(data, defaultEncoding);
-                Log.Ll(String.Format("TryUrlGet(): downloaded url '{0}' of size {1} bytes", url, data.Length));
+                Log.Line(String.Format("TryUrlGet(): downloaded url '{0}' of size {1} bytes", url, data.Length));
                 return new Tuple<string, HttpWebResponse>(s, rsp);
             }
             catch (Exception e)
             {
-                Log.Ll(String.Format("TryUrlGet() for '{0}' failed", url));
-                Log.Le(e);
+                Log.Line(String.Format("TryUrlGet() for '{0}' failed", url));
+                Log.E(e);
                 // it's ok if we fail
                 return new Tuple<string, HttpWebResponse>(null, null);
             }
@@ -84,7 +85,7 @@ namespace Yepi
         // by killing the program.
         public static bool TryUrlGetToFileAtomic(string url, string dstPath)
         {
-            string tmpPath = Utils.TryUrlGetToTempFile(url, System.IO.Path.GetTempPath());
+            string tmpPath = TryUrlGetToTempFile(url, System.IO.Path.GetTempPath());
             if (null == tmpPath)
                 return false;
             bool ok = Utils.TryFileMove(tmpPath, dstPath);
@@ -93,5 +94,29 @@ namespace Yepi
             return ok;
         }
 
+        // TODO: use system temp directory instead of providing it by the app
+        public static string TryUrlGetToTempFile(string url, string dir)
+        {
+            try
+            {
+                var path = System.IO.Path.Combine(dir, System.IO.Path.GetRandomFileName());
+                WebRequest request = WebRequest.Create(url);
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                Stream fileReader = response.GetResponseStream();
+                using (FileStream fileWriter = File.Open(path, FileMode.Create))
+                {
+                    fileReader.CopyTo(fileWriter);
+                }
+                fileReader.Close();
+                var size = new FileInfo(path).Length;
+                Log.Line(String.Format("TryUrlGetToTempFile(): downloaded url '{0}' of size {1} bytes", url, size));
+                return path;
+            }
+            catch (Exception e)
+            {
+                Log.E(e);
+                return null;
+            }
+        }
     }
 }
