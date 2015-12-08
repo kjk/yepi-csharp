@@ -9,7 +9,7 @@ using System.IO;
 
 namespace Yepi
 {
-    public class Http
+    public static class Http
     {
         // returns null if failed to download
         public static async Task<string> UrlDownloadAsStringAsync(string uri)
@@ -88,9 +88,9 @@ namespace Yepi
             string tmpPath = TryUrlGetToTempFile(url, System.IO.Path.GetTempPath());
             if (null == tmpPath)
                 return false;
-            bool ok = Utils.TryFileMove(tmpPath, dstPath);
+            bool ok = FileUtil.TryFileMove(tmpPath, dstPath);
             if (!ok)
-                Utils.TryFileDelete(tmpPath);
+                FileUtil.TryFileDelete(tmpPath);
             return ok;
         }
 
