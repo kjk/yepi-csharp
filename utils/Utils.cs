@@ -128,6 +128,31 @@ using System.Windows.Media.Imaging;
             foreach (var s in parts)
             {
                 if (string.IsNullOrWhiteSpace(s)) continue;
+                var parts2 = s.Split(new char[] { ':' }, 2);
+                if (parts2.Length != 2) continue;
+                var name = parts2[0].ToLowerInvariant();
+                var val = parts2[1].Trim();
+                if (name == "ver")
+                {
+                    version = val;
+                }
+                else if (name == "url")
+                {
+                    url = val;
+                }
+            }
+            return version != null && url != null;
+        }
+
+        public static bool ParseUpdateResponseOld(string updateTxt, out string version, out string url)
+        {
+            version = url = null;
+            if (null == updateTxt)
+                return false;
+            var parts = updateTxt.Split('\n');
+            foreach (var s in parts)
+            {
+                if (string.IsNullOrWhiteSpace(s)) continue;
                 if (null == version)
                 {
                     version = s;
@@ -264,13 +289,6 @@ using System.Windows.Media.Imaging;
             return s + "s";
         }
 
-        public static string SanitizeForFileName(string name)
-        {
-            string invalidChars = Regex.Escape(new string(Path.GetInvalidFileNameChars()));
-            string invalidReStr = string.Format(@"[{0}]", invalidChars);
-            return Regex.Replace(name, invalidReStr, "");
-        }
-
         public static BitmapImage TryLoadBitmapImage(string path)
         {
             try
@@ -399,29 +417,6 @@ using System.Windows.Media.Imaging;
                 if (win is T)
                     win.Close();
             }
-        }
-
-        public static string GetPostData(List<Tuple<string, string, string>> postData, string boundary)
-        {
-            StringBuilder sb = new StringBuilder();
-
-            foreach (var p in postData)
-            {
-                var name = p.Item1;
-                var value = p.Item2;
-                var fileName = p.Item3;
-                if (fileName != null)
-                {
-                    sb.Append(string.Format("--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; filename=\"{2}\"\r\n;Content-Type: text/plain\r\n\r\n", boundary, name, fileName));
-                    sb.Append(value);
-                }
-                else
-                {
-                    sb.Append(string.Format("--{0}\r\nContent-Disposition: form-data; name=\"{1}\"\r\n\r\n{2}\r\n", boundary, name, value));
-                }
-            }
-            sb.Append("\r\n--" + boundary + "--\r\n");
-            return sb.ToString();
         }
 
         public static ImageSource BitmapSourceFromBitmap(Bitmap bitmap)

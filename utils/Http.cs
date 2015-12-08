@@ -138,5 +138,30 @@ namespace Yepi
                 return null;
             }
         }
+
+        // TODO: should obsolete
+        public static string GetPostData(List<Tuple<string, string, string>> postData, string boundary)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            foreach (var p in postData)
+            {
+                var name = p.Item1;
+                var value = p.Item2;
+                var fileName = p.Item3;
+                if (fileName != null)
+                {
+                    sb.Append(string.Format("--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; filename=\"{2}\"\r\n;Content-Type: text/plain\r\n\r\n", boundary, name, fileName));
+                    sb.Append(value);
+                }
+                else
+                {
+                    sb.Append(string.Format("--{0}\r\nContent-Disposition: form-data; name=\"{1}\"\r\n\r\n{2}\r\n", boundary, name, value));
+                }
+            }
+            sb.Append("\r\n--" + boundary + "--\r\n");
+            return sb.ToString();
+        }
+
     }
 }

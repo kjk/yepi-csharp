@@ -4,11 +4,19 @@ using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Yepi
 {
     public static class FileUtil
     {
+        public static string SanitizeForFileName(string name)
+        {
+            string invalidChars = Regex.Escape(new string(Path.GetInvalidFileNameChars()));
+            string invalidReStr = string.Format(@"[{0}]", invalidChars);
+            return Regex.Replace(name, invalidReStr, "");
+        }
+
         public static bool TryCreateDirectory(string path)
         {
             try
