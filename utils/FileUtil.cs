@@ -21,8 +21,9 @@ namespace Yepi
         {
             try
             {
+                // don't generate exceptions if already exists
                 if (Directory.Exists(path))
-                    return true; // don't generate exceptions if already exists
+                    return true;
                 Directory.CreateDirectory(path);
             }
             catch (Exception e)
@@ -37,8 +38,9 @@ namespace Yepi
         {
             try
             {
+                // don't generate exceptions if doesn't exist
                 if (!File.Exists(path))
-                    return; // don't generate exceptions if doesn't exist
+                    return;
                 File.Delete(path);
             }
             catch (Exception e)
@@ -186,17 +188,31 @@ namespace Yepi
             }
         }
 
+        public static bool TryWriteAllBytes(string path, byte[] d)
+        {
+            try
+            {
+                File.WriteAllBytes(path, d);
+                return true;
+            }
+            catch (Exception e)
+            {
+                Log.E(e);
+                return false;
+            }
+        }
+
+        public static bool TryWriteAllTextUtf8(string path, string s)
+        {
+            return TryWriteStringToFileAsUtf8(path, s);
+        }
+
+        // TODO: deprecate in favor of TryWriteAllTextUtf8
         public static bool TryWriteStringToFileAsUtf8(string path, string s)
         {
             try
             {
-                using (FileStream f = File.Open(path, FileMode.Create))
-                {
-                    using (StreamWriter stm = new StreamWriter(f, Encoding.UTF8))
-                    {
-                        stm.Write(s);
-                    }
-                }
+                File.WriteAllText(path, s, Encoding.UTF8);
                 return true;
             }
             catch (Exception e)
@@ -254,6 +270,19 @@ namespace Yepi
                     }
                 }
                 return s;
+            }
+            catch (Exception e)
+            {
+                Log.E(e);
+                return null;
+            }
+        }
+
+        public static byte[] TryReadAllBytes(string path)
+        {
+            try
+            {
+                return File.ReadAllBytes(path);
             }
             catch (Exception e)
             {
