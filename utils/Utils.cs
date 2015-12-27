@@ -117,7 +117,7 @@ namespace Yepi
             var v1f = version2float(ver1.ToLower());
             var v2f = version2float(ver2.ToLower());
             bool greater = v1f > v2f;
-            Log.Line(String.Format("ProgramVersionGreater(), ver1={0}, ver2={1}, v1f={2}, v2f={3}, v1f>v2f={4}", ver1, ver2, v1f, v2f, greater));
+            //Log.Line(String.Format("ProgramVersionGreater(), ver1={0}, ver2={1}, v1f={2}, v2f={3}, v1f>v2f={4}", ver1, ver2, v1f, v2f, greater));
             return greater;
         }
 
